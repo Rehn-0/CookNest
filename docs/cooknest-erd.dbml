@@ -1,0 +1,98 @@
+Table users {
+  user_id integer [pk, increment]
+  username varchar [not null, unique]
+  email varchar [not null, unique]
+  phone varchar
+  profile_image_url varchar
+  created_at timestamp [default: `now()`]
+}
+
+Table categories {
+  category_id integer [pk, increment]
+  name varchar [not null, unique]
+}
+
+Table recipes {
+  recipe_id integer [pk, increment]
+  user_id integer [not null]
+  category_id integer [not null]
+  title varchar [not null]
+  description text
+  instructions text
+  cook_time_minutes integer
+  difficulty varchar [note: 'Easy, Medium or Hard']
+  image_url varchar
+  video_url varchar
+  created_at timestamp [default: `now()`]
+}
+
+Table ingredients {
+  ingredient_id integer [pk, increment]
+  name varchar [not null, unique]
+}
+
+Table recipe_ingredients {
+  recipe_id integer [not null]
+  ingredient_id integer [not null]
+  quantity decimal
+  unit varchar
+
+  indexes {
+    (recipe_id, ingredient_id) [pk]
+  }
+}
+
+Table comments {
+  comment_id integer [pk, increment]
+  recipe_id integer [not null]
+  user_id integer [not null]
+  text text [not null]
+  created_at timestamp [default: `now()`]
+}
+
+Table likes {
+  like_id integer [pk, increment]
+  recipe_id integer [not null]
+  user_id integer [not null]
+  type varchar [not null, note: 'like or dislike']
+  created_at timestamp [default: `now()`]
+
+  indexes {
+    (recipe_id, user_id) [unique]
+  }
+}
+
+Table ratings {
+  rating_id integer [pk, increment]
+  recipe_id integer [not null]
+  user_id integer [not null]
+  stars integer [not null, note: '1 to 5']
+  created_at timestamp [default: `now()`]
+
+  indexes {
+    (recipe_id, user_id) [unique]
+  }
+}
+
+Table favourites {
+  user_id integer [not null]
+  recipe_id integer [not null]
+  saved_at timestamp [default: `now()`]
+
+  indexes {
+    (user_id, recipe_id) [pk]
+  }
+}
+
+Ref: recipes.user_id > users.user_id
+Ref: recipes.category_id > categories.category_id
+Ref: recipe_ingredients.recipe_id > recipes.recipe_id
+Ref: recipe_ingredients.ingredient_id > ingredients.ingredient_id
+Ref: comments.recipe_id > recipes.recipe_id
+Ref: comments.user_id > users.user_id
+Ref: likes.recipe_id > recipes.recipe_id
+Ref: likes.user_id > users.user_id
+Ref: ratings.recipe_id > recipes.recipe_id
+Ref: ratings.user_id > users.user_id
+Ref: favourites.user_id > users.user_id
+Ref: favourites.recipe_id > recipes.recipe_id
