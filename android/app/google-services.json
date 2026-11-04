@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "481763039252",
+    "project_id": "cooknest-552e7",
+    "storage_bucket": "cooknest-552e7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:481763039252:android:2df19ef0b2f2929d886f01",
+        "android_client_info": {
+          "package_name": "com.cooknest.cooknest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4Z6NEn_Ubu1x68SKN8O9Hv9yv-ie0BVE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

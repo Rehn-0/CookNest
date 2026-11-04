@@ -1,0 +1,37 @@
+{
+	"folders": [
+		{
+			"path": "android"
+		},
+		{
+			"path": "backend"
+		},
+		{
+			"path": "build"
+		},
+		{
+			"path": "docs"
+		},
+		{
+			"path": "ios"
+		},
+		{
+			"path": "lib"
+		},
+		{
+			"path": "linux"
+		},
+		{
+			"path": "macos"
+		},
+		{
+			"path": "test"
+		},
+		{
+			"path": "web"
+		},
+		{
+			"path": "windows"
+		}
+	]
+}
