@@ -65,9 +65,12 @@ class _AuthScreenState extends State<AuthScreen> {
               ? UsernameStatus.taken
               : UsernameStatus.available,
         );
-      } catch (_) {
+      } catch (e) {
         if (!mounted) return;
-        setState(() => _status = UsernameStatus.error);
+        setState(() {
+          _status = UsernameStatus.idle;
+          _error = 'Check failed: $e';
+        });
       }
     });
   }
