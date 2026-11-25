@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'phone_verify_screen.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -121,6 +123,13 @@ class _RecipeFeedScreenState extends State<RecipeFeedScreen> {
       appBar: AppBar(
         title: const Text('CookNest'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.phone_android),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const PhoneVerifyScreen()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => FirebaseAuth.instance.signOut(),
