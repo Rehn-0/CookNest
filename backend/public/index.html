@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CookNest</title>
+  <link rel="stylesheet" href="/tailwind.css" />
+  <link rel="stylesheet" href="/custom.css" />
+</head>
+<body class="bg-orange-50 min-h-screen">
+  <main class="max-w-3xl mx-auto p-6">
+    <header class="hero p-8 mb-8">
+      <h1 class="text-4xl font-bold">CookNest</h1>
+      <p class="tagline mt-2 text-lg">Recipes loaded from our GraphQL API</p>
+    </header>
+
+    <div id="list" class="grid gap-4 sm:grid-cols-2"></div>
+
+    <div class="flex items-center justify-between mt-8">
+      <button id="prev" class="px-4 py-2 rounded-lg bg-orange-600 text-white font-medium disabled:opacity-40">Previous</button>
+      <span id="info" class="text-gray-700"></span>
+      <button id="next" class="px-4 py-2 rounded-lg bg-orange-600 text-white font-medium disabled:opacity-40">Next</button>
+    </div>
+  </main>
+
+  <script>
+    let page = 1;
+    const limit = 6;
+
+    async function load() {
+      const query = `{ recipes(page: ${page}, limit: ${limit}) { page totalPages data { id title category difficulty cookTime } } }`;
+      const res = await fetch('/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query }),
+      });
+      const { data } = await res.json();
+      const r = data.recipes;
+
+      document.getElementById('list').innerHTML = r.data.map((x) => `
+        <article class="recipe-card bg-white p-5">
+          <h2 class="text-xl font-semibold text-gray-900">${x.title}</h2>
+          <p class="mt-1 text-sm text-gray-500">${x.category} &bull; ${x.difficulty}</p>
+          <p class="mt-3 inline-block rounded-full bg-orange-100 px-3 py-1 text-sm font-medium text-orange-700">${x.cookTime} min</p>
+        </article>
+      `).join('');
+
+      document.getElementById('info').textContent = `Page ${r.page} of ${r.totalPages}`;
+      document.getElementById('prev').disabled = r.page <= 1;
+      document.getElementById('next').disabled = r.page >= r.totalPages;
+    }
+
+    document.getElementById('prev').onclick = () => { page--; load(); };
+    document.getElementById('next').onclick = () => { page++; load(); };
+    load();
+  </script>
+</body>
+</html>

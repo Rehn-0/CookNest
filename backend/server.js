@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { buildSchema } = require('graphql');
 const { createHandler } = require('graphql-http/lib/use/express');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Sample data (will be replaced by a real database later)
 const recipes = [

@@ -1,0 +1,23 @@
+.hero {
+  background: linear-gradient(135deg, #e64a19, #ff8a50);
+  color: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+.hero h1 {
+  letter-spacing: 0.5px;
+}
+.hero .tagline {
+  opacity: 0.9;
+}
+
+.recipe-card {
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+.recipe-card:hover {
+  transform: translateY(-4px);
+}
+
+/*# sourceMappingURL=custom.css.map */
