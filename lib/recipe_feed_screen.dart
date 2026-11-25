@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import 'add_recipe_screen.dart';
 import 'recipe.dart';
+import 'recipe_detail_screen.dart';
 
 class RecipeFeedScreen extends StatefulWidget {
   const RecipeFeedScreen({super.key});
@@ -145,6 +146,12 @@ class _RecipeFeedScreenState extends State<RecipeFeedScreen> {
           return Card(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: ListTile(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => RecipeDetailScreen(recipe: r),
+                ),
+              ),
               title: Text(r.title),
               subtitle: Text(
                 '${r.category} • ${r.difficulty} • ${r.cookTime} min',

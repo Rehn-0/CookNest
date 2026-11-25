@@ -14,10 +14,10 @@ class Recipe {
   });
 
   factory Recipe.fromJson(Map<String, dynamic> json) => Recipe(
-    id: json['id'],
-    title: json['title'],
-    category: json['category'],
-    difficulty: json['difficulty'],
-    cookTime: json['cookTime'],
-  );
+        id: json['id'],
+        title: json['title'],
+        category: json['category'],
+        difficulty: json['difficulty'],
+        cookTime: json['cookTime'],
+      );
 }
