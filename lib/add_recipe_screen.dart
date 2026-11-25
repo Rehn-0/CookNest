@@ -1,4 +1,11 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'cloudinary_service.dart';
 
 class IngredientRow {
   final TextEditingController name = TextEditingController();
@@ -37,6 +44,9 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
   static const units = ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'piece'];
 
   String? _category;
+  File? _image;
+  String? _imageUrl;
+  bool _uploading = false;
   String _difficulty = 'Easy';
   final List<IngredientRow> _ingredients = [IngredientRow()];
 
@@ -63,30 +73,67 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
     });
   }
 
-  void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+  Future<void> _pickImage() async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (picked != null) {
+      setState(() {
+        _image = File(picked.path);
+        _imageUrl = null;
+      });
+    }
+  }
 
-    final recipe = {
-      'title': _title.text.trim(),
-      'description': _description.text.trim(),
-      'instructions': _instructions.text.trim(),
-      'cook_time_minutes': int.parse(_cookTime.text.trim()),
-      'category': _category,
-      'difficulty': _difficulty,
-      'ingredients': _ingredients
-          .map(
-            (r) => {
-              'name': r.name.text.trim(),
-              'quantity': double.parse(r.quantity.text.trim()),
-              'unit': r.unit,
-            },
-          )
-          .toList(),
-    };
+  Future<void> _submit() async {
+    debugPrint('SAVE PRESSED');
+    if (!_formKey.currentState!.validate()) {
+      debugPrint('VALIDATION FAILED');
+      return;
+    }
+    setState(() => _uploading = true);
 
-    debugPrint(recipe.toString());
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Recipe saved (demo)')));
+    try {
+      String? imageUrl;
+      if (_image != null) {
+        imageUrl = await CloudinaryService.uploadImage(_image!);
+      }
+
+      final recipe = {
+        'title': _title.text.trim(),
+        'description': _description.text.trim(),
+        'instructions': _instructions.text.trim(),
+        'cook_time_minutes': int.parse(_cookTime.text.trim()),
+        'category': _category,
+        'difficulty': _difficulty,
+        'image_url': imageUrl,
+        'user_id': FirebaseAuth.instance.currentUser?.uid,
+        'created_at': FieldValue.serverTimestamp(),
+        'ingredients': _ingredients
+            .map(
+              (r) => {
+                'name': r.name.text.trim(),
+                'quantity': double.parse(r.quantity.text.trim()),
+                'unit': r.unit,
+              },
+            )
+            .toList(),
+      };
+
+      await FirebaseFirestore.instance.collection('recipes').add(recipe);
+
+      if (!mounted) return;
+      setState(() => _imageUrl = imageUrl);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Recipe saved')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Could not save: $e')));
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
   }
 
   @override
@@ -252,11 +299,40 @@ class _AddRecipeScreenState extends State<AddRecipeScreen> {
                   (v == null || v.trim().isEmpty) ? 'Enter instructions' : null,
             ),
             const SizedBox(height: 20),
+            const Text(
+              'Photo',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            if (_image != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(_image!, height: 180, fit: BoxFit.cover),
+              ),
+            OutlinedButton.icon(
+              onPressed: _pickImage,
+              icon: const Icon(Icons.photo_library_outlined),
+              label: Text(_image == null ? 'Choose photo' : 'Change photo'),
+            ),
+            if (_imageUrl != null) ...[
+              const SizedBox(height: 12),
+              const Text('Uploaded to cloud storage:'),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.network(
+                  _imageUrl!,
+                  height: 180,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ],
+            const SizedBox(height: 20),
             FilledButton(
-              onPressed: _submit,
-              child: const Padding(
-                padding: EdgeInsets.all(12),
-                child: Text('Save recipe'),
+              onPressed: _uploading ? null : _submit,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(_uploading ? 'Saving...' : 'Save recipe'),
               ),
             ),
           ],
