@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const { buildSchema } = require('graphql');
+const { createHandler } = require('graphql-http/lib/use/express');
 
 const app = express();
 app.use(cors());
@@ -29,22 +31,55 @@ const recipes = [
   { id: 20, title: 'Cheese Sandwich', category: 'Snack', difficulty: 'Easy', cookTime: 10 },
 ];
 
-// GET /recipes?page=1&limit=5
-app.get('/recipes', (req, res) => {
-  const page = Math.max(parseInt(req.query.page) || 1, 1);
-  const limit = Math.min(Math.max(parseInt(req.query.limit) || 5, 1), 50);
-
+// Shared pagination logic, used by both REST and GraphQL
+function paginate(pageArg, limitArg) {
+  const page = Math.max(parseInt(pageArg) || 1, 1);
+  const limit = Math.min(Math.max(parseInt(limitArg) || 5, 1), 50);
   const start = (page - 1) * limit;
-  const data = recipes.slice(start, start + limit);
-
-  res.json({
+  return {
     page,
     limit,
     total: recipes.length,
     totalPages: Math.ceil(recipes.length / limit),
-    data,
-  });
+    data: recipes.slice(start, start + limit),
+  };
+}
+
+// ---------- REST: GET /recipes?page=1&limit=5 ----------
+app.get('/recipes', (req, res) => {
+  res.json(paginate(req.query.page, req.query.limit));
 });
+
+// ---------- GraphQL: /graphql ----------
+const schema = buildSchema(`
+  type Recipe {
+    id: Int!
+    title: String!
+    category: String!
+    difficulty: String!
+    cookTime: Int!
+  }
+
+  type RecipePage {
+    page: Int!
+    limit: Int!
+    total: Int!
+    totalPages: Int!
+    data: [Recipe!]!
+  }
+
+  type Query {
+    recipes(page: Int = 1, limit: Int = 5): RecipePage!
+    recipe(id: Int!): Recipe
+  }
+`);
+
+const root = {
+  recipes: ({ page, limit }) => paginate(page, limit),
+  recipe: ({ id }) => recipes.find((r) => r.id === id) || null,
+};
+
+app.all('/graphql', createHandler({ schema, rootValue: root }));
 
 const PORT = 3000;
 app.listen(PORT, () => {
